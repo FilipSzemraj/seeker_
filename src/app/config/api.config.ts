@@ -8,8 +8,7 @@
  * Fill this from the CDK stack output after the first backend deploy. No
  * trailing slash.
  */
-export const API_BASE_URL =
-    "https://eu-central-1_KG8bq07ux.execute-api.eu-central-1.amazonaws.com";
+export const API_BASE_URL = "https://REPLACE_ME.execute-api.eu-central-1.amazonaws.com";
 
 /** True when the request targets our backend API (and should carry the JWT). */
 export function isApiRequest(url: string): boolean {

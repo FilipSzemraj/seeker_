@@ -12,7 +12,7 @@ import {
  * SPA rather than the origin root. Register this exact string (trailing slash
  * included) as an allowed callback / sign-out URL on the Cognito App Client.
  */
-const appBaseUri = "http://localhost:4200/"
+const appBaseUri = globalThis.document.baseURI;
 
 /**
  * AWS Cognito (OIDC) configuration for the Flat Searcher SPA.
