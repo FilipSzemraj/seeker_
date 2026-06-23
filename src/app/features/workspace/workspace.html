@@ -1,0 +1,52 @@
+<div class="ws">
+  <header class="ws__top">
+    <a class="ws__brand" routerLink="/" aria-label="Seeker home">
+      <span class="ws__brand-mark" aria-hidden="true"></span>
+      Seeker
+    </a>
+    <div class="ws__account">
+      @if (auth.email(); as email) {
+        <span class="ws__email data">{{ email }}</span>
+      }
+      <button type="button" class="btn btn--ghost ws__signout" (click)="signOut()">Sign out</button>
+    </div>
+  </header>
+
+  <main class="ws__main" id="main">
+    <div class="ws__search">
+      <app-search-bar
+        [busy]="loading()"
+        [activeFilterCount]="activeFilterCount()"
+        [filtersOpen]="filtersOpen()"
+        (ask)="onAsk($event)"
+        (toggleFilters)="toggleFilters()"
+      />
+
+      @if (filtersOpen()) {
+        <div class="ws__filters">
+          <app-filter-panel (apply)="onApplyFilters($event); filtersOpen.set(false)" />
+        </div>
+      }
+    </div>
+
+    <section class="ws__results" aria-label="Listings">
+      <app-listing-list
+        [listings]="listings()"
+        [loading]="loading()"
+        [hasSearched]="hasSearched()"
+        [total]="total()"
+        [contextNote]="contextNote()"
+        [sources]="sources()"
+      />
+    </section>
+  </main>
+
+  <app-chat-panel
+    [open]="chatOpen()"
+    [busy]="chatBusy()"
+    [messages]="messages()"
+    (ask)="onAsk($event)"
+    (toggle)="toggleChat()"
+    (clear)="clearChat()"
+  />
+</div>

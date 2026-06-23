@@ -1,0 +1,209 @@
+/* =============================================================================
+   Seeker — global design system
+   "Plaster & ink, one botanical accent." Minimal, architectural, calm.
+   Bricolage Grotesque (display) · Inter (body) · JetBrains Mono (data/labels).
+   ========================================================================== */
+
+:root {
+  /* --- Palette ------------------------------------------------------------ */
+  --paper: #f4f3ef; /* warm plaster — page base                */
+  --paper-2: #eceae3; /* recessed panels, inputs                  */
+  --paper-3: #e4e2d9; /* hover wells, dividers in panels          */
+  --ink: #17150f; /* near-black warm ink — primary text       */
+  --ink-2: #4a463c; /* body secondary                           */
+  --stone: #6e685b; /* muted captions / labels (AA on paper)    */
+  --line: #d8d5cc; /* hairlines                                */
+  --line-strong: #c5c1b5;
+  --accent: #3f5740; /* deep moss — interactive accent only      */
+  --accent-ink: #2c3d2d; /* darker moss for text-on-paper            */
+  --accent-soft: #e4e8df; /* moss wash — active chips, agent bubble   */
+  --danger: #8a3b2f;
+  --white: #ffffff;
+
+  /* --- Type --------------------------------------------------------------- */
+  --font-display: 'Bricolage Grotesque', 'Inter', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+  /* --- Spacing scale ------------------------------------------------------ */
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+  --s-7: 3rem;
+  --s-8: 4.5rem;
+  --s-9: 7rem;
+
+  /* --- Radius (architectural: small, with pill chips for tension) -------- */
+  --r-sm: 4px;
+  --r-md: 8px;
+  --r-pill: 999px;
+
+  /* --- Elevation (soft, low) --------------------------------------------- */
+  --shadow-1: 0 1px 2px rgba(23, 21, 15, 0.04);
+  --shadow-2: 0 6px 24px -12px rgba(23, 21, 15, 0.22);
+  --shadow-3: 0 18px 48px -20px rgba(23, 21, 15, 0.32);
+
+  --maxw: 1240px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* --- Reset --------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.6;
+  font-feature-settings: 'kern' 1, 'liga' 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--accent-ink);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* --- Shared utility primitives ------------------------------------------ */
+
+/* Eyebrow / kicker — mono, tracked, the structural label device */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--stone);
+  margin: 0;
+}
+
+/* Mono numeral treatment for all structured data (prices, specs) */
+.data {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Buttons -------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1;
+  padding: 0.85rem 1.5rem;
+  border-radius: var(--r-pill);
+  border: 1px solid transparent;
+  transition:
+    background 0.2s var(--ease),
+    color 0.2s var(--ease),
+    border-color 0.2s var(--ease),
+    transform 0.2s var(--ease);
+}
+.btn--primary {
+  background: var(--accent);
+  color: var(--paper);
+}
+.btn--primary:hover {
+  background: var(--accent-ink);
+  text-decoration: none;
+}
+.btn--ghost {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--line-strong);
+}
+.btn--ghost:hover {
+  background: var(--paper-2);
+  text-decoration: none;
+}
+
+/* Focus — always visible, AA-friendly */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+/* Screen-reader-only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Faint architectural plan-grid — the ambient backdrop motif */
+.plan-grid {
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 64px 64px;
+  background-position: center;
+  opacity: 0.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

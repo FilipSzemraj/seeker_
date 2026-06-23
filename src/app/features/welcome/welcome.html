@@ -1,0 +1,82 @@
+<a class="skip-link" href="#join">Skip to sign in</a>
+
+<!-- ── Hero: the thesis ─────────────────────────────────────────────── -->
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero__grid plan-grid" aria-hidden="true"></div>
+
+  <div class="hero__inner">
+    <p class="hero__eyebrow eyebrow">Rental search · Poland</p>
+
+    <h1 class="hero__title" id="hero-title">Seeker</h1>
+
+    <p class="hero__thesis">
+      Every Polish rental, one search. We gather listings from across the major portals, clean them into one
+      consistent shape, and let you find a flat by asking — or by filtering with precision.
+    </p>
+
+    <div class="hero__demo" role="img" [attr.aria-label]="'Example search: ' + typed()">
+      <span class="hero__demo-hint" aria-hidden="true">Ask</span>
+      <span class="hero__demo-text" [attr.data-sizer]="longest">
+        <span class="hero__demo-value">{{ typed() }}<span class="hero__caret" [class.is-on]="caretOn()" aria-hidden="true"></span></span>
+      </span>
+    </div>
+
+    <a class="hero__scroll" href="#join">
+      <span>Get started</span>
+      <span class="hero__scroll-arrow" aria-hidden="true">↓</span>
+    </a>
+  </div>
+</section>
+
+<!-- ── What it does + sign in ───────────────────────────────────────── -->
+<section class="join" id="join" aria-labelledby="join-title">
+  <div class="join__inner">
+    <div class="join__intro">
+      <p class="eyebrow">What you can do</p>
+      <h2 class="join__title" id="join-title">Two ways to find the right place.</h2>
+    </div>
+
+    <ol class="features">
+      <li class="feature">
+        <span class="feature__no data" aria-hidden="true">01</span>
+        <h3 class="feature__title">Ask in plain words</h3>
+        <p class="feature__text">
+          Describe the flat you want — district, budget, light, the feel of it — and the agent surfaces matching
+          listings and explains why each one fits.
+        </p>
+      </li>
+      <li class="feature">
+        <span class="feature__no data" aria-hidden="true">02</span>
+        <h3 class="feature__title">Filter with precision</h3>
+        <p class="feature__text">
+          Narrow by city, district, monthly cost, rooms, condition, light and amenities — exact, structured
+          filters over a clean catalogue.
+        </p>
+      </li>
+      <li class="feature">
+        <span class="feature__no data" aria-hidden="true">03</span>
+        <h3 class="feature__title">One source of truth</h3>
+        <p class="feature__text">
+          Listings from Otodom and OLX — Facebook coming soon — de-duplicated and normalised, each linking
+          straight back to the original offer.
+        </p>
+      </li>
+    </ol>
+
+    <div class="join__cta">
+      @if (auth.isAuthenticated()) {
+        <p class="join__signed">Signed in as <strong>{{ auth.email() }}</strong>.</p>
+        <a class="btn btn--primary" routerLink="/gateway">Enter Seeker →</a>
+      } @else {
+        <p class="join__note">Sign in with your account to start searching.</p>
+        <button type="button" class="btn btn--primary" (click)="signIn()">Sign in to continue</button>
+        <p class="join__fine">Access is invite-only while Seeker is in private beta.</p>
+      }
+    </div>
+  </div>
+
+  <footer class="join__footer">
+    <span class="join__foot-brand">Seeker</span>
+    <span class="data">Private beta · Warszawa</span>
+  </footer>
+</section>

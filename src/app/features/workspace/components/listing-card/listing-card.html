@@ -1,0 +1,60 @@
+<article class="card">
+  <div class="card__media">
+    @if (cover(); as image) {
+      <img [src]="image.url" [alt]="alt()" loading="lazy" decoding="async" />
+    } @else {
+      <div class="card__media-empty" aria-hidden="true">No photo yet</div>
+    }
+    <span class="card__source data">{{ sourceLabel() }}</span>
+  </div>
+
+  <div class="card__body">
+    <div class="card__head">
+      <p class="card__loc eyebrow">{{ locationText() }}</p>
+      <h3 class="card__title">
+        <a [href]="listing().source_url" target="_blank" rel="noopener noreferrer">
+          {{ listing().title || 'Untitled listing' }}
+        </a>
+      </h3>
+    </div>
+
+    @if (reason(); as why) {
+      <p class="card__reason">
+        <span class="card__reason-mark" aria-hidden="true">↳</span>
+        {{ why }}
+      </p>
+    }
+
+    <p class="card__specs data">
+      @for (spec of specs(); track spec; let last = $last) {
+        <span>{{ spec }}</span>
+        @if (!last) {
+          <span class="card__dot" aria-hidden="true">·</span>
+        }
+      }
+    </p>
+
+    @if (amenities().length || tags().length) {
+      <ul class="card__chips" aria-label="Features">
+        @for (a of amenities(); track a) {
+          <li class="chip chip--amenity">{{ a }}</li>
+        }
+        @for (t of tags(); track t) {
+          <li class="chip chip--tag">{{ t }}</li>
+        }
+      </ul>
+    }
+
+    <div class="card__foot">
+      <p class="card__cost">
+        <span class="card__cost-value data">{{ cost().value }}</span>
+        <span class="card__cost-label">{{ cost().label }}</span>
+      </p>
+      <a class="card__open" [href]="listing().source_url" target="_blank" rel="noopener noreferrer">
+        Open on {{ sourceLabel() }}
+        <span aria-hidden="true">↗</span>
+        <span class="sr-only">(opens the original listing in a new tab)</span>
+      </a>
+    </div>
+  </div>
+</article>

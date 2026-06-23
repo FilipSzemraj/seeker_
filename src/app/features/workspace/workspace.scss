@@ -1,0 +1,89 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.ws__top {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding: var(--s-4) clamp(1rem, 4vw, 2.5rem);
+  background: rgba(244, 243, 239, 0.85);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+
+.ws__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.3rem;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+.ws__brand:hover {
+  text-decoration: none;
+}
+.ws__brand-mark {
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.ws__account {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+}
+.ws__email {
+  font-size: 0.8rem;
+  color: var(--stone);
+}
+.ws__signout {
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+}
+
+.ws__main {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 4vw, 2.5rem) var(--s-9);
+}
+
+.ws__search {
+  position: sticky;
+  top: 72px;
+  z-index: 15;
+  padding-bottom: var(--s-4);
+  margin-bottom: var(--s-6);
+}
+.ws__filters {
+  margin-top: var(--s-4);
+  animation: drop 0.24s var(--ease);
+}
+@keyframes drop {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .ws__email {
+    display: none;
+  }
+  .ws__search {
+    position: static;
+  }
+}

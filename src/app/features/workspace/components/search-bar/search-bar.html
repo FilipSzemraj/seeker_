@@ -1,0 +1,44 @@
+<div class="bar">
+  <form class="bar__field" (submit)="$event.preventDefault(); submit()">
+    <label class="sr-only" for="ask-input">Describe the flat you're looking for</label>
+    <span class="bar__hint" aria-hidden="true">Ask</span>
+    <input
+      id="ask-input"
+      class="bar__input"
+      type="text"
+      autocomplete="off"
+      placeholder="Bright 2-room in Mokotów under 3500 zł with a balcony…"
+      [value]="draft()"
+      (input)="draft.set($any($event.target).value)"
+      [disabled]="busy()"
+    />
+    <button
+      class="bar__submit"
+      type="submit"
+      [disabled]="busy() || !draft().trim()"
+      [attr.aria-label]="busy() ? 'Searching' : 'Ask Seeker'"
+    >
+      @if (busy()) {
+        <span class="bar__spinner" aria-hidden="true"></span>
+      } @else {
+        <span aria-hidden="true" style="line-height: 1rem">→</span>
+      }
+    </button>
+  </form>
+
+  <button
+    type="button"
+    class="bar__filters"
+    [class.is-open]="filtersOpen()"
+    (click)="toggleFilters.emit()"
+    [attr.aria-expanded]="filtersOpen()"
+    aria-controls="filter-panel"
+  >
+    <span aria-hidden="true" style="font-size:1.5rem">⚙</span>
+    Filters
+    @if (activeFilterCount() > 0) {
+      <span class="bar__count data" aria-hidden="true">{{ activeFilterCount() }}</span>
+      <span class="sr-only">{{ activeFilterCount() }} active</span>
+    }
+  </button>
+</div>

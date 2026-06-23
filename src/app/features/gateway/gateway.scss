@@ -1,0 +1,159 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  z-index: 100;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 0.6rem 1rem;
+  border-radius: 0 0 var(--r-sm) 0;
+}
+.skip-link:focus {
+  left: 0;
+}
+
+/* ── Top bar (mirrors the workspace chrome) ────────────────────────── */
+.gw__top {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding: var(--s-4) clamp(1rem, 4vw, 2.5rem);
+  background: rgba(244, 243, 239, 0.85);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.gw__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.3rem;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+.gw__brand:hover {
+  text-decoration: none;
+}
+.gw__brand-mark {
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.gw__account {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+}
+.gw__email {
+  font-size: 0.8rem;
+  color: var(--stone);
+}
+.gw__signout {
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+}
+
+/* ── Stage ─────────────────────────────────────────────────────────── */
+.gw {
+  position: relative;
+  min-height: calc(100svh - 72px);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+.gw__grid {
+  position: absolute;
+  inset: -10% -10% 0;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 22%, transparent 78%);
+}
+
+.gw__inner {
+  position: relative;
+  max-width: var(--maxw);
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--s-8) clamp(1.25rem, 5vw, 3rem);
+  animation: rise 0.7s var(--ease) both;
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.gw__panel {
+  max-width: 52ch;
+}
+.gw__eyebrow {
+  margin-bottom: var(--s-5);
+  color: var(--accent-ink);
+}
+.gw__title {
+  font-size: clamp(2.6rem, 8vw, 5rem);
+  font-weight: 800;
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+  margin-bottom: var(--s-5);
+}
+.gw__lede {
+  font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+  line-height: 1.55;
+  color: var(--ink-2);
+  margin-bottom: var(--s-5);
+}
+.gw__hint {
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--stone);
+  margin-bottom: var(--s-6);
+}
+
+/* Premium account facts */
+.gw__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-6);
+  margin: 0 0 var(--s-7);
+  padding: var(--s-4) 0 0;
+  border-top: 1px solid var(--line-strong);
+}
+.gw__fact {
+  margin: 0;
+}
+.gw__fact-key {
+  display: block;
+  margin-bottom: var(--s-2);
+  color: var(--stone);
+}
+.gw__fact-val {
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+
+.gw__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-4);
+}
+
+@media (max-width: 640px) {
+  .gw__email {
+    display: none;
+  }
+}

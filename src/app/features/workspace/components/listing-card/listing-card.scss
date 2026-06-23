@@ -1,0 +1,217 @@
+:host {
+  display: block;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-1);
+  transition:
+    transform 0.25s var(--ease),
+    box-shadow 0.25s var(--ease),
+    border-color 0.25s var(--ease);
+}
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-2);
+  border-color: var(--line-strong);
+}
+
+.card__media {
+  position: relative;
+  aspect-ratio: 3 / 2;
+  background: var(--paper-3);
+}
+.card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.card__media-empty {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  color: var(--stone);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+}
+.card__source {
+  position: absolute;
+  top: var(--s-3);
+  left: var(--s-3);
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.55rem;
+  background: rgba(244, 243, 239, 0.92);
+  color: var(--ink);
+  border-radius: var(--r-pill);
+  backdrop-filter: blur(4px);
+}
+
+.card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-4) var(--s-4) var(--s-5);
+  flex: 1;
+}
+
+.card__loc {
+  font-size: 0.68rem;
+}
+.card__title {
+  font-size: 1.18rem;
+  font-weight: 700;
+  line-height: 1.12;
+  margin-top: 0.35rem;
+}
+.card__title a {
+  color: var(--ink);
+}
+.card__title a:hover {
+  color: var(--accent-ink);
+  text-decoration: none;
+}
+
+.card__reason {
+  display: flex;
+  gap: 0.4rem;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  color: var(--ink-2);
+  background: var(--accent-soft);
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--r-sm);
+}
+.card__reason-mark {
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+.card__specs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--ink-2);
+  margin: 0;
+}
+.card__dot {
+  color: var(--line-strong);
+}
+
+.card__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.chip {
+  font-size: 0.72rem;
+  line-height: 1;
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--r-pill);
+  white-space: nowrap;
+}
+.chip--amenity {
+  background: var(--paper-2);
+  color: var(--ink-2);
+  border: 1px solid var(--line);
+}
+.chip--tag {
+  background: transparent;
+  color: var(--stone);
+  border: 1px dashed var(--line-strong);
+  font-family: var(--font-mono);
+  letter-spacing: -0.01em;
+}
+
+.card__foot {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s-3);
+  margin-top: auto;
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--line);
+}
+.card__cost {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.card__cost-value {
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+.card__cost-label {
+  font-size: 0.7rem;
+  color: var(--stone);
+}
+.card__open {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.card__open:hover {
+  text-decoration: none;
+  color: var(--ink);
+}
+.card__open > span[aria-hidden] {
+  --icon-x: 0;
+  --icon-y: -0.05em;
+  display: inline-block;
+  transform: translate(var(--icon-x), var(--icon-y));
+}
+
+/* --- compact variant: inline chat result -------------------------------- */
+:host(.is-compact) .card {
+  flex-direction: row;
+  align-items: stretch;
+}
+:host(.is-compact) .card__media {
+  aspect-ratio: auto;
+  width: 116px;
+  flex-shrink: 0;
+}
+:host(.is-compact) .card__source {
+  font-size: 0.58rem;
+  padding: 0.2rem 0.4rem;
+  top: var(--s-2);
+  left: var(--s-2);
+}
+:host(.is-compact) .card__body {
+  padding: var(--s-3) var(--s-4);
+  gap: var(--s-2);
+}
+:host(.is-compact) .card__title {
+  font-size: 1rem;
+}
+:host(.is-compact) .card__chips {
+  display: none;
+}
+
+@media (max-width: 420px) {
+  :host(.is-compact) .card {
+    flex-direction: column;
+  }
+  :host(.is-compact) .card__media {
+    width: 100%;
+    aspect-ratio: 3 / 2;
+  }
+}

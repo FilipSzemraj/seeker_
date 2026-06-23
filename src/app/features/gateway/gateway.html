@@ -1,0 +1,66 @@
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="gw__top">
+  <a class="gw__brand" routerLink="/" aria-label="Seeker home">
+    <span class="gw__brand-mark" aria-hidden="true"></span>
+    Seeker
+  </a>
+  <div class="gw__account">
+    @if (auth.email(); as email) {
+      <span class="gw__email data">{{ email }}</span>
+    }
+    <button type="button" class="btn btn--ghost gw__signout" (click)="signOut()">Sign out</button>
+  </div>
+</header>
+
+<main class="gw" id="main">
+  <div class="gw__grid plan-grid" aria-hidden="true"></div>
+
+  <div class="gw__inner">
+    @if (auth.isPremiumUser()) {
+      <section class="gw__panel" aria-labelledby="gw-title">
+        <p class="gw__eyebrow eyebrow">Membership · Premium</p>
+        <h1 class="gw__title" id="gw-title">You're in.</h1>
+        <p class="gw__lede">
+          Your account includes <strong>premium access</strong> to Seeker. The full search
+          workspace is unlocked for you — ask the agent in plain words or filter the clean
+          catalogue with precision, all from one screen.
+        </p>
+
+        <dl class="gw__facts">
+          <div class="gw__fact">
+            <dt class="gw__fact-key eyebrow">Account</dt>
+            <dd class="gw__fact-val data">{{ auth.email() ?? '—' }}</dd>
+          </div>
+          <div class="gw__fact">
+            <dt class="gw__fact-key eyebrow">Plan</dt>
+            <dd class="gw__fact-val data">Premium · active</dd>
+          </div>
+        </dl>
+
+        <div class="gw__cta">
+          <a class="btn btn--primary" routerLink="/app">Enter the workspace →</a>
+        </div>
+      </section>
+    } @else {
+      <section class="gw__panel" aria-labelledby="gw-title">
+        <p class="gw__eyebrow eyebrow">Membership · Pending</p>
+        <h1 class="gw__title" id="gw-title">Almost there.</h1>
+        <p class="gw__lede">
+          You're signed in@if (auth.email(); as email) {<!--
+          --> as <strong>{{ email }}</strong>}, but your account doesn't have
+          <strong>premium access</strong> yet. The search workspace stays locked until an
+          administrator grants it.
+        </p>
+        <p class="gw__hint">
+          Please contact your administrator to request access. Once your premium membership is
+          active, sign in again and the workspace will open from here.
+        </p>
+
+        <div class="gw__cta">
+          <a class="btn btn--primary" routerLink="/">← Back to home</a>
+        </div>
+      </section>
+    }
+  </div>
+</main>

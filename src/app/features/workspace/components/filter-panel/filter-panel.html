@@ -1,0 +1,138 @@
+<form class="panel" id="filter-panel" (submit)="$event.preventDefault(); submit()">
+  <div class="panel__grid">
+    <!-- Location -->
+    <fieldset class="field field--span2">
+      <legend class="eyebrow">Where</legend>
+      <div class="field__row">
+        <label class="field__text">
+          <span class="sr-only">City</span>
+          <input
+            type="text"
+            placeholder="City — e.g. Warszawa"
+            [value]="draft().city ?? ''"
+            (input)="setText('city', $any($event.target).value)"
+          />
+        </label>
+        <label class="field__text">
+          <span class="sr-only">District</span>
+          <input
+            type="text"
+            placeholder="District — e.g. Mokotów"
+            [value]="draft().district ?? ''"
+            (input)="setText('district', $any($event.target).value)"
+          />
+        </label>
+      </div>
+    </fieldset>
+
+    <!-- Budget -->
+    <fieldset class="field">
+      <legend class="eyebrow">Max monthly cost</legend>
+      <label class="field__text field__text--money">
+        <span class="sr-only">Maximum monthly cost in złoty</span>
+        <input
+          type="number"
+          inputmode="numeric"
+          min="0"
+          step="100"
+          placeholder="e.g. 3500"
+          [value]="draft().max_cost ?? ''"
+          (input)="setMaxCost($any($event.target).value)"
+        />
+        <span class="field__suffix data" aria-hidden="true">zł</span>
+      </label>
+      <div class="seg" role="group" aria-label="Cost matching">
+        <button
+          type="button"
+          class="seg__btn"
+          [class.is-on]="draft().cost_mode === 'inclusive'"
+          [attr.aria-pressed]="draft().cost_mode === 'inclusive'"
+          (click)="setCostMode('inclusive')"
+        >
+          Include unconfirmed
+        </button>
+        <button
+          type="button"
+          class="seg__btn"
+          [class.is-on]="draft().cost_mode === 'strict'"
+          [attr.aria-pressed]="draft().cost_mode === 'strict'"
+          (click)="setCostMode('strict')"
+        >
+          Confirmed total only
+        </button>
+      </div>
+    </fieldset>
+
+    <!-- Rooms -->
+    <fieldset class="field">
+      <legend class="eyebrow">Rooms (min)</legend>
+      <div class="seg" role="group" aria-label="Minimum rooms">
+        @for (n of roomOptions; track n) {
+          <button
+            type="button"
+            class="seg__btn data"
+            [class.is-on]="draft().min_rooms === n"
+            [attr.aria-pressed]="draft().min_rooms === n"
+            (click)="toggleRooms(n)"
+          >
+            {{ n }}{{ n === 4 ? '+' : '' }}
+          </button>
+        }
+      </div>
+    </fieldset>
+
+    <!-- Furnished -->
+    <fieldset class="field">
+      <legend class="eyebrow">Furnished</legend>
+      <div class="seg" role="group" aria-label="Furnished">
+        <button type="button" class="seg__btn" [class.is-on]="draft().furnished === true" [attr.aria-pressed]="draft().furnished === true" (click)="setFurnished(true)">Yes</button>
+        <button type="button" class="seg__btn" [class.is-on]="draft().furnished === false" [attr.aria-pressed]="draft().furnished === false" (click)="setFurnished(false)">No</button>
+      </div>
+    </fieldset>
+
+    <!-- Brightness -->
+    <fieldset class="field">
+      <legend class="eyebrow">Light</legend>
+      <div class="seg" role="group" aria-label="Brightness">
+        @for (o of brightness; track o.value) {
+          <button type="button" class="seg__btn" [class.is-on]="draft().brightness === o.value" [attr.aria-pressed]="draft().brightness === o.value" (click)="selectOne('brightness', o.value)">{{ o.label }}</button>
+        }
+      </div>
+    </fieldset>
+
+    <!-- Design style -->
+    <fieldset class="field field--span2">
+      <legend class="eyebrow">Design style</legend>
+      <div class="pills" role="group" aria-label="Design style">
+        @for (o of designStyles; track o.value) {
+          <button type="button" class="pill-btn" [class.is-on]="draft().design_style === o.value" [attr.aria-pressed]="draft().design_style === o.value" (click)="selectOne('design_style', o.value)">{{ o.label }}</button>
+        }
+      </div>
+    </fieldset>
+
+    <!-- Condition -->
+    <fieldset class="field field--span2">
+      <legend class="eyebrow">Condition</legend>
+      <div class="pills" role="group" aria-label="Condition">
+        @for (o of conditions; track o.value) {
+          <button type="button" class="pill-btn" [class.is-on]="draft().condition === o.value" [attr.aria-pressed]="draft().condition === o.value" (click)="selectOne('condition', o.value)">{{ o.label }}</button>
+        }
+      </div>
+    </fieldset>
+
+    <!-- Amenities -->
+    <fieldset class="field field--span2">
+      <legend class="eyebrow">Must have</legend>
+      <div class="pills" role="group" aria-label="Required amenities">
+        @for (o of amenityOptions; track o.value) {
+          <button type="button" class="pill-btn" [class.is-on]="activeAmenities().has(o.value)" [attr.aria-pressed]="activeAmenities().has(o.value)" (click)="toggleAmenity(o.value)">{{ o.label }}</button>
+        }
+      </div>
+    </fieldset>
+  </div>
+
+  <div class="panel__actions">
+    <button type="button" class="btn btn--ghost" (click)="clear()">Clear all</button>
+    <button type="submit" class="btn btn--primary">Search listings</button>
+  </div>
+</form>

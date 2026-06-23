@@ -1,0 +1,287 @@
+:host {
+  display: block;
+}
+
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  z-index: 100;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 0.6rem 1rem;
+  border-radius: 0 0 var(--r-sm) 0;
+}
+.skip-link:focus {
+  left: 0;
+}
+
+/* ── Hero ──────────────────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+.hero__grid {
+  position: absolute;
+  inset: -10% -10% 0;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 38%, #000 25%, transparent 78%);
+}
+
+.hero__inner {
+  position: relative;
+  max-width: var(--maxw);
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--s-8) clamp(1.25rem, 5vw, 3rem);
+  animation: rise 0.9s var(--ease) both;
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hero__eyebrow {
+  margin-bottom: var(--s-5);
+}
+.hero__title {
+  font-size: clamp(4.5rem, 19vw, 17rem);
+  font-weight: 800;
+  line-height: 0.86;
+  letter-spacing: -0.05em;
+  margin-bottom: var(--s-5);
+}
+.hero__thesis {
+  max-width: 40ch;
+  font-size: clamp(1.05rem, 1.6vw, 1.35rem);
+  line-height: 1.5;
+  color: var(--ink-2);
+  margin-bottom: var(--s-6);
+}
+
+/* The auto-typing demo — the signature element */
+.hero__demo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-3);
+  max-width: 100%;
+  background: var(--white);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-pill);
+  padding: 0.7rem 1.4rem 0.7rem 1.1rem;
+  box-shadow: var(--shadow-2);
+  margin-bottom: var(--s-7);
+}
+.hero__demo-hint {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--stone);
+  padding-right: var(--s-3);
+  border-right: 1px solid var(--line);
+}
+
+/* Ghost sizer: ::before holds the longest phrase, the live value is layered
+   over it in the same grid cell — the field never resizes as text types. */
+.hero__demo-text {
+  display: grid;
+  min-width: 0;
+  padding-right: 4px; /* room for the caret past the longest phrase */
+  font-size: clamp(0.92rem, 1.4vw, 1.1rem);
+  line-height: 1.5;
+  color: var(--ink);
+}
+.hero__demo-text::before {
+  content: attr(data-sizer);
+  grid-area: 1 / 1;
+  visibility: hidden;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.hero__demo-value {
+  grid-area: 1 / 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.hero__caret {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  margin-left: 2px;
+  vertical-align: middle;
+  background: var(--accent);
+  opacity: 0;
+}
+.hero__caret.is-on {
+  opacity: 1;
+}
+
+/* Narrow screens: field goes full-width, phrase wraps (still sized to the
+   longest, so height is constant), and "Get started" drops below it. */
+@media (max-width: 640px) {
+  .hero__demo {
+    display: flex;
+    width: 100%;
+    align-items: flex-start;
+  }
+  .hero__demo-hint {
+    padding-top: 0.2em;
+  }
+  .hero__demo-text {
+    flex: 1;
+    padding-right: 0;
+  }
+  .hero__demo-text::before,
+  .hero__demo-value {
+    white-space: normal;
+  }
+  .hero__scroll {
+    margin-left: 0;
+  }
+}
+
+.hero__scroll {
+  display: inline-flex;
+  margin-left: 1rem;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.hero__scroll:hover {
+  text-decoration: none;
+  color: var(--accent-ink);
+}
+.hero__scroll-arrow {
+  --icon-y: -0.05em;
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  animation: bob 1.8s var(--ease) infinite;
+}
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(var(--icon-y));
+  }
+  50% {
+    transform: translateY(calc(var(--icon-y) + 5px));
+  }
+}
+
+/* ── Join ──────────────────────────────────────────────────────────── */
+.join {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: var(--paper-2);
+  border-top: 1px solid var(--line);
+}
+.join__inner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: var(--maxw);
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--s-9) clamp(1.25rem, 5vw, 3rem) var(--s-8);
+}
+
+.join__intro {
+  margin-bottom: var(--s-8);
+}
+.join__title {
+  font-size: clamp(2rem, 5vw, 3.6rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin-top: var(--s-3);
+  max-width: 20ch;
+}
+
+.features {
+  list-style: none;
+  margin: 0 0 var(--s-9);
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--s-7);
+}
+.feature {
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--line-strong);
+}
+.feature__no {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--accent-ink);
+  margin-bottom: var(--s-4);
+}
+.feature__title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: var(--s-3);
+}
+.feature__text {
+  color: var(--ink-2);
+  line-height: 1.55;
+  max-width: 34ch;
+}
+
+.join__cta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s-4);
+}
+.join__note,
+.join__signed {
+  font-size: 1.1rem;
+  color: var(--ink);
+}
+.join__fine {
+  font-size: 0.85rem;
+  color: var(--stone);
+}
+
+.join__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: var(--maxw);
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--s-5) clamp(1.25rem, 5vw, 3rem);
+  border-top: 1px solid var(--line);
+  font-size: 0.78rem;
+  color: var(--stone);
+}
+.join__foot-brand {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+@media (max-width: 760px) {
+  .features {
+    grid-template-columns: 1fr;
+    gap: var(--s-6);
+  }
+}

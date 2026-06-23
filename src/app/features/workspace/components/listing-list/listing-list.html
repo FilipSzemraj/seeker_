@@ -1,0 +1,50 @@
+<div class="results">
+  <div class="results__bar">
+    <p class="results__count">
+      @if (loading()) {
+        <span class="eyebrow">Searching…</span>
+      } @else if (hasSearched()) {
+        <span class="results__num data">{{ total() }}</span>
+        <span class="results__num-label">{{ total() === 1 ? 'listing' : 'listings' }}</span>
+        @if (contextNote(); as note) {
+          <span class="results__note">· {{ note }}</span>
+        }
+      } @else {
+        <span class="eyebrow">Showing the latest listings</span>
+      }
+    </p>
+
+    @if (sourceLines().length) {
+      <ul class="results__sources" aria-label="Source availability">
+        @for (s of sourceLines(); track s.name) {
+          <li class="src" [class.src--off]="!s.available" [attr.title]="s.message ?? null">
+            <span class="src__dot" aria-hidden="true"></span>
+            {{ s.name }}
+            <span class="sr-only">{{ s.available ? 'available' : 'unavailable' }}</span>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="grid" aria-hidden="true">
+      @for (s of skeletons; track s) {
+        <div class="skeleton"></div>
+      }
+    </div>
+  } @else if (listings().length) {
+    <div class="grid">
+      @for (listing of listings(); track listing.source_url) {
+        <app-listing-card [listing]="listing" />
+      }
+    </div>
+  } @else {
+    <div class="results__empty">
+      <p class="results__empty-title">Nothing matched.</p>
+      <p class="results__empty-text">
+        Loosen a filter, raise the budget, or describe the place in your own words in the conversation.
+      </p>
+    </div>
+  }
+</div>
