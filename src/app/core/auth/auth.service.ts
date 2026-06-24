@@ -115,7 +115,31 @@ export class AuthService {
         }
 
         const user = await userManager.getUser();
-        this.currentUser.set(user && !user.expired ? user : null);
+        if (user && !user.expired) {
+            this.currentUser.set(user);
+            return;
+        }
+
+        // The stored access token is expired. Cognito hands us a refresh token
+        // even without `offline_access`, but oidc-client-ts won't auto-renew a
+        // token that's already expired on load (authts/oidc-client-ts#2012), so
+        // do it ourselves. `signinSilent` uses the refresh token directly — no
+        // iframe, no `silent_redirect_uri`. If the refresh token is gone or
+        // expired (past the App Client's refresh-token lifetime) this throws and
+        // we treat the user as signed out.
+        if (user?.refresh_token) {
+            try {
+                const renewed = await userManager.signinSilent();
+                this.currentUser.set(
+                    renewed && !renewed.expired ? renewed : null,
+                );
+                return;
+            } catch (error) {
+                console.warn("[auth] silent token refresh on load failed", error);
+            }
+        }
+
+        this.currentUser.set(null);
     }
 
     /** Clear the post-login redirect flag once the app has acted on it. */

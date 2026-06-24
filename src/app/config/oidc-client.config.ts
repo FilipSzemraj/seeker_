@@ -29,14 +29,17 @@ const cognitoAuthConfig: UserManagerSettings = {
     redirect_uri: appBaseUri,
     post_logout_redirect_uri: appBaseUri,
     response_type: "code",
-    // `offline_access` makes Cognito issue a refresh token, which
-    // `automaticSilentRenew` uses to keep the session alive without an
-    // interactive redirect. Enable the corresponding auth flow on the Cognito
-    // App Client too, or no refresh token is returned.
-    scope: "email openid offline_access",
+    // Cognito always returns a refresh token with the authorization-code grant
+    // — it does NOT use the OIDC `offline_access` scope (and rejects it with
+    // `invalid_scope` unless it's explicitly allowed on the App Client). So we
+    // keep the standard scopes here; the refresh token is what keeps the
+    // session alive (App Client "Refresh token expiration" governs its life).
+    scope: "email openid",
     // Persist tokens across full page reloads (PKCE, no client secret in the browser).
     userStore: new WebStorageStateStore({ store: window.localStorage }),
-    // Keep the session alive transparently using the refresh token.
+    // Keep the session alive transparently using the refresh token while a tab
+    // is open. Note: this does NOT cover an already-expired token on cold load
+    // (authts/oidc-client-ts#2012) — AuthService.restoreSession handles that.
     automaticSilentRenew: true,
     // Drop the `?code=&state=` params from the URL after the callback completes.
     response_mode: "query",
