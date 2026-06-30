@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../core/auth/auth.service';
 import { SearchService } from '../../core/search/search.service';
@@ -39,6 +39,7 @@ import { MapPreview } from './components/map-preview/map-preview';
 })
 export class Workspace {
   private readonly search = inject(SearchService);
+  private readonly router = inject(Router);
   protected readonly auth = inject(AuthService);
 
   protected readonly results = signal<ScoredListingView[]>([]);
@@ -69,6 +70,7 @@ export class Workspace {
   protected readonly appliedFilters = signal<FilterValues>({});
 
   protected readonly mapOpen = signal(false);
+  protected readonly helpOpen = signal(false);
   protected readonly selectedUrl = signal<string | null>(null);
   protected readonly geoFilter = signal<GeoArea | null>(null);
 
@@ -92,6 +94,9 @@ export class Workspace {
   }
   protected toggleMap(): void {
     this.mapOpen.update((v) => !v);
+  }
+  protected toggleHelp(): void {
+    this.helpOpen.update((v) => !v);
   }
   protected selectListing(url: string | null): void {
     this.selectedUrl.set(url);
@@ -221,7 +226,14 @@ export class Workspace {
         this.quota.set(null);
         this.entitled.set(true);
       }
-    } catch {
+    } catch (err) {
+      // 403 = signed in but no access-tier group (the API's tier gate). The
+      // accessGuard normally blocks this route, so a 403 here means the token's
+      // groups desynced — bounce to the gateway, which explains the requirement.
+      if (err instanceof HttpErrorResponse && err.status === 403) {
+        void this.router.navigateByUrl('/gateway');
+        return;
+      }
       this.entitled.set(false);
     }
   }

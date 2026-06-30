@@ -32,11 +32,20 @@
     [class.is-on]="rerank()"
     (click)="toggleRerank()"
     [attr.aria-pressed]="rerank()"
-    title="Rerank results for sharper relevance (uses more of your token budget)"
+    aria-describedby="rerank-tip"
   >
     <span class="bar__rerank-dot" aria-hidden="true"></span>
     Rerank
     <span class="sr-only">{{ rerank() ? 'on' : 'off' }}</span>
+    <span class="bar__tip" id="rerank-tip" role="tooltip">
+      @if (rerank()) {
+        <strong>Rerank is on.</strong> The top matches are re-ordered by a second-pass
+        relevance model for sharper results — at a higher token cost per search.
+      } @else {
+        Re-orders the top matches with a second-pass relevance model for sharper
+        ordering. Uses more of your token budget per search.
+      }
+    </span>
   </button>
 
   <button

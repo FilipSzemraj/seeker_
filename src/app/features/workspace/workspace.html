@@ -52,6 +52,53 @@
 
     <section class="ws__results" aria-label="Listings">
       <div class="ws__results-head">
+        <div class="ws__help">
+          <button
+            type="button"
+            class="ws__help-btn"
+            [class.is-open]="helpOpen()"
+            [attr.aria-expanded]="helpOpen()"
+            aria-controls="ws-help-pop"
+            aria-label="How to use Seeker"
+            (click)="toggleHelp()"
+          >
+            <span aria-hidden="true">?</span>
+          </button>
+
+          @if (helpOpen()) {
+            <button
+              type="button"
+              class="ws__help-scrim"
+              aria-label="Close help"
+              (click)="toggleHelp()"
+            ></button>
+            <div class="ws__help-pop" id="ws-help-pop" role="dialog" aria-label="How to use Seeker">
+              <div class="ws__help-head">
+                <h3 class="ws__help-title eyebrow">How to use</h3>
+                <button type="button" class="ws__help-close" aria-label="Close" (click)="toggleHelp()">×</button>
+              </div>
+              <dl class="ws__help-list">
+                <div class="ws__help-item">
+                  <dt>Ask</dt>
+                  <dd>Describe the flat in plain language and press Enter — Seeker finds the closest matches by meaning, not just keywords.</dd>
+                </div>
+                <div class="ws__help-item">
+                  <dt>Rerank</dt>
+                  <dd>Re-orders the top matches with a second-pass relevance model for sharper ordering. Uses more of your token budget.</dd>
+                </div>
+                <div class="ws__help-item">
+                  <dt>Filters</dt>
+                  <dd>Open the structured panel to narrow by city, budget, size and more. The count shows how many filters are active.</dd>
+                </div>
+                <div class="ws__help-item">
+                  <dt>Show map</dt>
+                  <dd>Plot results on a map and drag to select an area — that area becomes a location filter for your search.</dd>
+                </div>
+              </dl>
+            </div>
+          }
+        </div>
+
         <button
           type="button"
           class="btn btn--ghost ws__view-toggle"

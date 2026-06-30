@@ -4,6 +4,20 @@ import type { User } from "oidc-client-ts";
 import { signOutRedirect, userManager } from "../../config/oidc-client.config";
 
 /**
+ * Cognito groups that grant an access tier, most-generous first — mirrors the
+ * backend's `groups` map + `tier_precedence` in `config/limits.yml`. A user in
+ * none of these is rejected by the API with a 403:
+ *   "requires one of the access-tier groups: ['seeker-basic', 'seeker-plus', 'seeker-premium']"
+ */
+const TIER_GROUPS = [
+    { group: "seeker-premium", tier: "premium" },
+    { group: "seeker-plus", tier: "plus" },
+    { group: "seeker-basic", tier: "basic" },
+] as const;
+
+export type AccessTier = (typeof TIER_GROUPS)[number]["tier"];
+
+/**
  * Central source of truth for authentication state.
  *
  * Wraps the oidc-client-ts `UserManager` and exposes the logged-in user as
@@ -55,9 +69,21 @@ export class AuthService {
         return this.currentUser()?.profile?.["cognito:groups"] as string[] | undefined;
     });
 
-    readonly isPremiumUser = computed(() => {
-        return this.groups()?.includes("premium") ?? false;
+    /**
+     * The user's access tier, resolved from their Cognito groups by the same
+     * precedence the backend uses (premium > plus > basic), or null when they
+     * belong to no tier group. This is the single gate that mirrors the API's
+     * access check — see TIER_GROUPS.
+     */
+    readonly accessTier = computed<AccessTier | null>(() => {
+        const groups = this.groups() ?? [];
+        return TIER_GROUPS.find((t) => groups.includes(t.group))?.tier ?? null;
     });
+
+    /** True when the user belongs to at least one access-tier group. */
+    readonly hasAccess = computed(() => this.accessTier() !== null);
+
+    readonly isPremiumUser = computed(() => this.accessTier() === "premium");
 
     constructor() {
         // Keep the signal in sync with UserManager lifecycle events.

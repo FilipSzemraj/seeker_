@@ -146,8 +146,101 @@
 
 .ws__results-head {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  gap: var(--s-3);
   margin-bottom: var(--s-4);
+}
+
+/* Global "?" help — sits to the left of the map toggle. */
+.ws__help {
+  position: relative;
+  display: inline-flex;
+}
+.ws__help-btn {
+  display: grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: var(--white);
+  color: var(--ink-2);
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1;
+  transition:
+    background 0.2s var(--ease),
+    border-color 0.2s var(--ease),
+    color 0.2s var(--ease);
+}
+.ws__help-btn:hover,
+.ws__help-btn.is-open {
+  background: var(--paper-2);
+  border-color: var(--ink-2);
+  color: var(--ink);
+}
+
+.ws__help-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 1250;
+  border: 0;
+  background: transparent;
+  cursor: default;
+}
+.ws__help-pop {
+  position: absolute;
+  top: calc(100% + 0.6rem);
+  right: 0;
+  z-index: 1260;
+  width: min(22rem, 86vw);
+  padding: var(--s-4);
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-2, var(--shadow-1));
+  text-align: left;
+  animation: drop 0.2s var(--ease);
+}
+.ws__help-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--s-3);
+}
+.ws__help-title {
+  margin: 0;
+}
+.ws__help-close {
+  border: 0;
+  background: transparent;
+  color: var(--stone);
+  font-size: 1.3rem;
+  line-height: 1;
+  padding: 0 0.25rem;
+}
+.ws__help-close:hover {
+  color: var(--ink);
+}
+.ws__help-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  margin: 0;
+}
+.ws__help-item dt {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--ink);
+  margin-bottom: 0.1rem;
+}
+.ws__help-item dd {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--ink-2);
 }
 .ws__view-toggle.is-on {
   background: var(--accent-soft);

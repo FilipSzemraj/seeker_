@@ -10,6 +10,12 @@
   display: flex;
   flex-direction: column;
   gap: var(--s-5);
+  /* Keep the panel within the viewport so the page itself doesn't grow tall:
+     the fields scroll inside the card while the search bar (sticky above) and
+     the action bar (sticky below) stay reachable. */
+  max-height: min(74vh, 780px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .panel__loading {
@@ -21,8 +27,16 @@
   flex-direction: column;
   gap: var(--s-3);
 }
+/* Section indicators (Location, Budget, Size…) — deliberately more prominent
+   than the field labels nested inside them, so the grouping reads at a glance. */
 .fsec__title {
   margin: 0;
+  font-size: 0.86rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--ink);
+  padding-bottom: var(--s-2);
+  border-bottom: 1px solid var(--line);
 }
 
 .fsec__grid {
@@ -64,10 +78,18 @@
 }
 
 .panel__actions {
+  /* Pinned to the bottom of the scrolling panel so Clear/Search stay reachable
+     without scrolling the whole page. Full-bleed via negative margins that
+     cancel the panel's padding. */
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
   display: flex;
   justify-content: flex-end;
   gap: var(--s-3);
-  padding-top: var(--s-5);
+  margin: 0 calc(-1 * var(--s-5)) calc(-1 * var(--s-5));
+  padding: var(--s-4) var(--s-5);
+  background: var(--paper-2);
   border-top: 1px solid var(--line);
 }
 

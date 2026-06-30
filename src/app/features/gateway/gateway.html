@@ -17,12 +17,12 @@
   <div class="gw__grid plan-grid" aria-hidden="true"></div>
 
   <div class="gw__inner">
-    @if (auth.isPremiumUser()) {
+    @if (auth.hasAccess()) {
       <section class="gw__panel" aria-labelledby="gw-title">
-        <p class="gw__eyebrow eyebrow">Membership · Premium</p>
+        <p class="gw__eyebrow eyebrow">Membership · {{ tierLabel() }}</p>
         <h1 class="gw__title" id="gw-title">You're in.</h1>
         <p class="gw__lede">
-          Your account includes <strong>premium access</strong> to Seeker. The full search
+          Your account has <strong>{{ tierLabel() }} access</strong> to Seeker. The full search
           workspace is unlocked for you — search in plain Polish or English or filter the clean
           catalogue with precision, all from one screen.
         </p>
@@ -34,7 +34,7 @@
           </div>
           <div class="gw__fact">
             <dt class="gw__fact-key eyebrow">Plan</dt>
-            <dd class="gw__fact-val data">Premium · active</dd>
+            <dd class="gw__fact-val data">{{ tierLabel() }} · active</dd>
           </div>
         </dl>
 
@@ -48,13 +48,15 @@
         <h1 class="gw__title" id="gw-title">Almost there.</h1>
         <p class="gw__lede">
           You're signed in@if (auth.email(); as email) {<!--
-          --> as <strong>{{ email }}</strong>}, but your account doesn't have
-          <strong>premium access</strong> yet. The search workspace stays locked until an
-          administrator grants it.
+          --> as <strong>{{ email }}</strong>}, but your account isn't in an
+          <strong>access tier</strong> yet. The search workspace stays locked until an
+          administrator adds you to one.
         </p>
         <p class="gw__hint">
-          Please contact your administrator to request access. Once your premium membership is
-          active, sign in again and the workspace will open from here.
+          Access requires membership in one of the tier groups
+          <span class="data">seeker-basic</span>, <span class="data">seeker-plus</span> or
+          <span class="data">seeker-premium</span>. Please contact your administrator to request
+          it — once it's active, sign in again and the workspace will open from here.
         </p>
 
         <div class="gw__cta">
