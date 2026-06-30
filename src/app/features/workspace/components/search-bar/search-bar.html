@@ -1,7 +1,7 @@
 <div class="bar">
   <form class="bar__field" (submit)="$event.preventDefault(); submit()">
     <label class="sr-only" for="ask-input">Describe the flat you're looking for</label>
-    <span class="bar__hint" aria-hidden="true">Ask</span>
+    <span class="bar__hint" aria-hidden="true">Search</span>
     <input
       id="ask-input"
       class="bar__input"
@@ -16,7 +16,7 @@
       class="bar__submit"
       type="submit"
       [disabled]="busy() || !draft().trim()"
-      [attr.aria-label]="busy() ? 'Searching' : 'Ask Seeker'"
+      [attr.aria-label]="busy() ? 'Searching' : 'Search Seeker'"
     >
       @if (busy()) {
         <span class="bar__spinner" aria-hidden="true"></span>
@@ -64,3 +64,20 @@
     }
   </button>
 </div>
+
+@if (history().length > 0) {
+  <div class="bar__history" role="group" aria-label="Recent searches">
+    <span class="bar__history-label">Recent</span>
+    @for (prompt of history(); track prompt) {
+      <button
+        type="button"
+        class="bar__chip"
+        [disabled]="busy()"
+        [title]="prompt"
+        (click)="runHistory(prompt)"
+      >
+        {{ prompt }}
+      </button>
+    }
+  </div>
+}

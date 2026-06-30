@@ -72,13 +72,6 @@ export class MapPanel {
       this.map = map;
       this.ready.set(true);
 
-      // Restore any area passed in from the parent's persisted filter.
-      const area = this.geo();
-      if (area) {
-        this.radiusKm.set(area.radius_km);
-        this.drawArea(area.lat, area.lon, area.radius_km);
-      }
-
       destroyRef.onDestroy(() => {
         ro.disconnect();
         map.remove();
@@ -98,6 +91,22 @@ export class MapPanel {
       const selected = this.selectedUrl();
       if (!this.ready()) return;
       this.applySelection(selected);
+    });
+
+    // Mirror the parent's geo area onto the map. Covers both the initial restore
+    // and later external edits (e.g. lat/lon typed into the filter panel). Redraw
+    // is idempotent, so changes the map itself emitted just settle harmlessly.
+    effect(() => {
+      const area = this.geo();
+      if (!this.ready()) return;
+      untracked(() => {
+        if (area) {
+          this.radiusKm.set(area.radius_km);
+          this.drawArea(area.lat, area.lon, area.radius_km);
+        } else {
+          this.removeArea();
+        }
+      });
     });
   }
 
@@ -169,11 +178,15 @@ export class MapPanel {
   }
 
   protected clearArea(): void {
+    this.removeArea();
+    this.geoChange.emit(null);
+  }
+
+  private removeArea(): void {
     this.areaCenter?.remove();
     this.areaCircle?.remove();
     this.areaCenter = undefined;
     this.areaCircle = undefined;
-    this.geoChange.emit(null);
   }
 
   private onMapClick(e: L.LeafletMouseEvent): void {
@@ -191,6 +204,10 @@ export class MapPanel {
 
     if (this.areaCircle) this.areaCircle.setLatLng(center).setRadius(radiusM);
     else this.areaCircle = L.circle(center, { radius: radiusM, className: 'map-area' }).addTo(map);
+
+    // Bring the point into view when it lands off-screen (e.g. typed coords);
+    // edits made within the current view (clicks, drags) leave the map put.
+    if (!map.getBounds().contains(center)) map.panTo(center, { animate: true });
 
     if (this.areaCenter) {
       this.areaCenter.setLatLng(center);

@@ -95,7 +95,11 @@ export function buildRetrieveRequest(
   fields: FilterField[],
   prompt: string,
   values: FilterValues,
-  opts: { k?: number; rerank?: boolean } = {},
+  opts: {
+    k?: number;
+    rerank?: boolean;
+    geo?: { lat: number; lon: number; radius_km: number } | null;
+  } = {},
 ): RetrieveRequest {
   const { body, facets } = collect(fields, values, 'retrieve');
   const req: RetrieveRequest = {
@@ -107,5 +111,20 @@ export function buildRetrieveRequest(
   if (typeof body['district'] === 'string') req.district = body['district'];
   if (typeof body['max_cost'] === 'number') req.max_cost = body['max_cost'];
   if (opts.k != null) req.k = opts.k;
+
+  // Forward-compatible geo: the backend `RetrieveRequest` does not yet accept a
+  // radius (Pydantic ignores the extra keys), so today a map area on the prompt
+  // search only narrows results client-side. Sending it now means the server
+  // can start honouring it with no frontend change — just regenerate types.ts.
+  if (opts.geo) {
+    const withGeo = req as RetrieveRequest & {
+      lat: number;
+      lon: number;
+      radius_km: number;
+    };
+    withGeo.lat = opts.geo.lat;
+    withGeo.lon = opts.geo.lon;
+    withGeo.radius_km = opts.geo.radius_km;
+  }
   return req;
 }

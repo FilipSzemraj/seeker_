@@ -2,6 +2,45 @@
   @if (fields().length === 0) {
     <p class="panel__loading eyebrow">Loading filters…</p>
   } @else {
+    @if (mapOpen()) {
+      <section class="fsec">
+        <h4 class="fsec__title eyebrow">Map point</h4>
+        <div class="fsec__grid">
+          <label class="fld">
+            <span class="fld__label eyebrow">Latitude</span>
+            <span class="fld__input">
+              <input
+                type="number"
+                inputmode="decimal"
+                step="any"
+                placeholder="e.g. 52.2297"
+                [value]="latDraft()"
+                (input)="latDraft.set($any($event.target).value)"
+                (change)="commitPoint()"
+              />
+            </span>
+          </label>
+          <label class="fld">
+            <span class="fld__label eyebrow">Longitude</span>
+            <span class="fld__input">
+              <input
+                type="number"
+                inputmode="decimal"
+                step="any"
+                placeholder="e.g. 21.0122"
+                [value]="lonDraft()"
+                (input)="lonDraft.set($any($event.target).value)"
+                (change)="commitPoint()"
+              />
+            </span>
+          </label>
+        </div>
+        <p class="fld__hint">
+          Pick a point on the map, or type coordinates to drop one. Clear both to remove it.
+        </p>
+      </section>
+    }
+
     @for (sec of mainSections(); track sec.key) {
       <section class="fsec">
         <h4 class="fsec__title eyebrow">{{ sec.label }}</h4>

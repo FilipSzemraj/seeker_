@@ -8,6 +8,7 @@
  */
 export const environment = {
   production: false,
-  apiBaseUrl: "https://nwzibqhzb8.execute-api.eu-central-1.amazonaws.com"
-  //apiBaseUrl: 'http://localhost:8000',
+  //apiBaseUrl: "https://nwzibqhzb8.execute-api.eu-central-1.amazonaws.com"
+  apiBaseUrl: 'http://localhost:8000',
 };
+ 

@@ -1,11 +1,13 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../core/auth/auth.service';
 import { SearchService } from '../../core/search/search.service';
+import { PromptHistoryService } from '../../core/search/prompt-history.service';
 import { toListingView } from '../../core/search/listing-mapper';
 import { buildQueryRequest, buildRetrieveRequest } from '../../core/search/request-builder';
+import { narrowByArea } from '../../core/search/geo';
 import { isQuota } from '../../core/api/models';
 import type { FilterField, QuotaSnapshot } from '../../core/api/models';
 import type { Listing } from '../../core/models/listing.model';
@@ -22,14 +24,19 @@ import { ListingList } from './components/listing-list/listing-list';
 import { MapPanel } from './components/map-panel/map-panel';
 import { MapPreview } from './components/map-preview/map-preview';
 
+/** The two retrieval surfaces, each with its own input UI and result state. */
+type Mode = 'query' | 'retrieve';
+
 /**
- * The post-login search workspace. Owns all retrieval state and wires the two
- * modes into ONE results grid:
- *   • the filter panel runs a structured `/query`;
- *   • the search box runs a semantic `/retrieve` (listings only — no prose).
- * The filter schema is fetched once from `/filters` and drives the panel; the
- * currently-applied filters also pre-filter the semantic search. Cold starts
- * are surfaced via the service's `serverWaking` signal and skeleton loaders.
+ * The post-login search workspace. Hosts TWO independent retrieval modes behind
+ * a switch, each keeping its own inputs and last results so flipping between
+ * them never loses work:
+ *   • "Filter"  — structured `POST /query` (Mongo exact/range match, geo-aware);
+ *   • "Prompt"  — semantic `POST /retrieve` (vector search, scored, prompt history).
+ *
+ * The map area is a *view filter*: picking/resizing it narrows the visible
+ * results client-side (no request). "Search this area" is the explicit action
+ * that re-runs the active mode's last search with the radius in its parameters.
  */
 @Component({
   selector: 'app-workspace',
@@ -41,13 +48,28 @@ export class Workspace {
   private readonly search = inject(SearchService);
   private readonly router = inject(Router);
   protected readonly auth = inject(AuthService);
+  protected readonly promptHistory = inject(PromptHistoryService);
 
-  protected readonly results = signal<ScoredListingView[]>([]);
-  protected readonly total = signal(0);
-  protected readonly loading = signal(false);
-  protected readonly hasSearched = signal(false);
+  /** Which mode's UI + results are showing. */
+  protected readonly mode = signal<Mode>('query');
+
+  // --- per-mode result state ------------------------------------------------
+  // Structured (/query) — unscored listings + per-source availability.
+  private readonly queryResults = signal<ScoredListingView[]>([]);
+  private readonly queryTotal = signal(0);
+  private readonly queryHasSearched = signal(false);
+  private readonly queryNote = signal<string | undefined>(undefined);
   protected readonly sources = signal<Record<string, SourceStatus>>({});
-  protected readonly contextNote = signal<string | undefined>(undefined);
+
+  // Semantic (/retrieve) — scored listings; remembers its prompt for re-runs.
+  private readonly retrieveResults = signal<ScoredListingView[]>([]);
+  private readonly retrieveTotal = signal(0);
+  private readonly retrieveHasSearched = signal(false);
+  private readonly retrieveNote = signal<string | undefined>(undefined);
+  private readonly lastPrompt = signal<string | null>(null);
+  private readonly lastRerank = signal(false);
+
+  protected readonly loading = signal(false);
   protected readonly errorBanner = signal<string | null>(null);
 
   /** "Waking the server…" hint, driven by the service's slow-request signal. */
@@ -74,7 +96,40 @@ export class Workspace {
   protected readonly selectedUrl = signal<string | null>(null);
   protected readonly geoFilter = signal<GeoArea | null>(null);
 
-  /** Plain listings for the map (results stripped of their score). */
+  /** When on, picking a listing from the list scrolls the map back into view. */
+  protected readonly jumpToMap = signal(true);
+  private readonly mapAnchor = viewChild<ElementRef<HTMLElement>>('mapAnchor');
+
+  // --- active-mode views (what the shared grid + map render) ----------------
+
+  /** The active mode's full (un-narrowed) result set. */
+  private readonly rawResults = computed(() =>
+    this.mode() === 'query' ? this.queryResults() : this.retrieveResults(),
+  );
+
+  /** Results after the client-side map-area narrowing. */
+  protected readonly results = computed(() => narrowByArea(this.rawResults(), this.geoFilter()));
+
+  protected readonly total = computed(() =>
+    this.mode() === 'query' ? this.queryTotal() : this.retrieveTotal(),
+  );
+  protected readonly hasSearched = computed(() =>
+    this.mode() === 'query' ? this.queryHasSearched() : this.retrieveHasSearched(),
+  );
+  protected readonly activeSources = computed(() =>
+    this.mode() === 'query' ? this.sources() : {},
+  );
+
+  /** Base note from the last search, plus a live "N within R km" when narrowed. */
+  protected readonly contextNote = computed(() => {
+    const base = this.mode() === 'query' ? this.queryNote() : this.retrieveNote();
+    const geo = this.geoFilter();
+    if (!geo) return base;
+    const suffix = `${this.results().length} within ${geo.radius_km} km`;
+    return base ? `${base} · ${suffix}` : suffix;
+  });
+
+  /** Plain listings for the map (narrowed results stripped of their score). */
   protected readonly listings = computed<Listing[]>(() => this.results().map((r) => r.listing));
 
   protected readonly selectedListing = computed(
@@ -85,8 +140,18 @@ export class Workspace {
     () => countActive(this.appliedFilters()) + (this.geoFilter() ? 1 : 0),
   );
 
+  /** "Search this area" is actionable when an area is set and there's a search to repeat. */
+  protected readonly canSearchArea = computed(
+    () => this.geoFilter() != null && (this.mode() === 'query' || this.lastPrompt() != null),
+  );
+
   constructor() {
     void this.bootstrap();
+  }
+
+  protected setMode(mode: Mode): void {
+    this.mode.set(mode);
+    if (mode === 'query') this.filtersOpen.set(true);
   }
 
   protected toggleFilters(): void {
@@ -98,8 +163,22 @@ export class Workspace {
   protected toggleHelp(): void {
     this.helpOpen.update((v) => !v);
   }
+  protected toggleJumpToMap(): void {
+    this.jumpToMap.update((v) => !v);
+  }
   protected selectListing(url: string | null): void {
     this.selectedUrl.set(url);
+  }
+
+  /**
+   * Selection coming from the results list. When "Jump to map" is on, scroll the
+   * map back into view so the picked listing is visible without manual scrolling.
+   */
+  protected selectFromList(url: string | null): void {
+    this.selectListing(url);
+    if (url && this.jumpToMap()) {
+      this.mapAnchor()?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
   protected dismissError(): void {
     this.errorBanner.set(null);
@@ -108,25 +187,72 @@ export class Workspace {
     void this.auth.signOut();
   }
 
-  /** Map area picker — re-runs the structured search with the new geo radius. */
+  /**
+   * Map area picker. Selecting/resizing an area only narrows the already-listed
+   * results client-side — no backend round-trip. Use "Search this area" to push
+   * the radius into a fresh server-side search.
+   */
   protected onGeoChange(area: GeoArea | null): void {
     this.geoFilter.set(area);
-    void this.runQuery();
+  }
+
+  /** Re-run the active mode's last search with the current map area in its params. */
+  protected searchThisArea(): void {
+    if (this.mode() === 'query') {
+      void this.runQuery();
+      return;
+    }
+    const prompt = this.lastPrompt();
+    if (prompt) void this.executeRetrieve(prompt, this.lastRerank());
+  }
+
+  /** Re-run a remembered prompt from the search-bar history chips. */
+  protected onHistoryPick(prompt: string): void {
+    void this.executeRetrieve(prompt, this.lastRerank());
   }
 
   /** Semantic path — the free-text search box (`POST /retrieve`). */
   protected async onAsk(event: AskEvent): Promise<void> {
     const trimmed = event.prompt.trim();
     if (!trimmed) return;
+    await this.executeRetrieve(trimmed, event.rerank);
+  }
+
+  /**
+   * Apply the filter panel. Filters refine whichever mode is active: in prompt
+   * mode they re-run the last `/retrieve` as pre-filters; otherwise they run a
+   * structured `/query`.
+   */
+  protected async onApplyFilters(values: FilterValues): Promise<void> {
+    this.appliedFilters.set(values);
+    this.filtersOpen.set(false);
+    const prompt = this.lastPrompt();
+    if (this.mode() === 'retrieve' && prompt) {
+      await this.executeRetrieve(prompt, this.lastRerank());
+      return;
+    }
+    this.mode.set('query');
+    await this.runQuery();
+  }
+
+  private async executeRetrieve(prompt: string, rerank: boolean): Promise<void> {
+    this.mode.set('retrieve');
+    this.lastPrompt.set(prompt);
+    this.lastRerank.set(rerank);
     this.beginSearch();
-    this.contextNote.set(`from "${truncate(trimmed, 48)}"`);
+    this.retrieveNote.set(`from "${truncate(prompt, 48)}"`);
     try {
-      const req = buildRetrieveRequest(this.schema(), trimmed, this.appliedFilters(), {
-        rerank: event.rerank,
+      const req = buildRetrieveRequest(this.schema(), prompt, this.appliedFilters(), {
+        rerank,
+        geo: this.geoFilter(),
       });
       const res = await this.search.retrieve(req);
-      this.results.set(res.results.map((r) => ({ listing: toListingView(r.listing), score: r.score })));
-      this.total.set(res.total);
+      this.retrieveResults.set(
+        res.results.map((r) => ({ listing: toListingView(r.listing), score: r.score })),
+      );
+      this.retrieveTotal.set(res.total);
+      this.retrieveHasSearched.set(true);
+      this.promptHistory.add(prompt);
       this.applyQuota(res.quota);
       this.dropStaleSelection();
     } catch (err) {
@@ -136,24 +262,18 @@ export class Workspace {
     }
   }
 
-  /** Structured path — the filter panel (`POST /query`). */
-  protected async onApplyFilters(values: FilterValues): Promise<void> {
-    this.appliedFilters.set(values);
-    this.filtersOpen.set(false);
-    await this.runQuery();
-  }
-
   private async runQuery(): Promise<void> {
     this.beginSearch();
-    this.contextNote.set(describeFilters(this.appliedFilters(), this.geoFilter()));
+    this.queryNote.set(describeFilters(this.appliedFilters(), this.geoFilter()));
     try {
       const req = buildQueryRequest(this.schema(), this.appliedFilters(), {
         geo: this.geoFilter(),
       });
       const res = await this.search.query(req);
       // Structured results are not scored.
-      this.results.set(res.listings.map((l) => ({ listing: toListingView(l), score: null })));
-      this.total.set(res.total_matched);
+      this.queryResults.set(res.listings.map((l) => ({ listing: toListingView(l), score: null })));
+      this.queryTotal.set(res.total_matched);
+      this.queryHasSearched.set(true);
       this.sources.set(res.source_availability);
       this.applyQuota(res.quota);
       this.dropStaleSelection();
@@ -167,10 +287,9 @@ export class Workspace {
   private beginSearch(): void {
     this.errorBanner.set(null);
     this.loading.set(true);
-    this.hasSearched.set(true);
   }
 
-  /** Drop the map selection if it fell out of the new result set. */
+  /** Drop the map selection if it fell out of the new (narrowed) result set. */
   private dropStaleSelection(): void {
     const sel = this.selectedUrl();
     if (sel && !this.results().some((r) => r.listing.source_url === sel)) {

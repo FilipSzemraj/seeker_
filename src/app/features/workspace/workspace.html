@@ -17,13 +17,42 @@
 
   <main class="ws__main" id="main">
     <div class="ws__search">
-      <app-search-bar
-        [busy]="loading()"
-        [activeFilterCount]="activeFilterCount()"
-        [filtersOpen]="filtersOpen()"
-        (ask)="onAsk($event)"
-        (toggleFilters)="toggleFilters()"
-      />
+      <div class="ws__modes" role="tablist" aria-label="Search mode">
+        <button
+          type="button"
+          role="tab"
+          class="ws__mode"
+          [class.is-on]="mode() === 'retrieve'"
+          [attr.aria-selected]="mode() === 'retrieve'"
+          (click)="setMode('retrieve')"
+        >
+          Prompt search
+          <span class="ws__mode-hint">by meaning</span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          class="ws__mode"
+          [class.is-on]="mode() === 'query'"
+          [attr.aria-selected]="mode() === 'query'"
+          (click)="setMode('query')"
+        >
+          Filter search
+          <span class="ws__mode-hint">structured</span>
+        </button>
+      </div>
+
+      @if (mode() === 'retrieve') {
+        <app-search-bar
+          [busy]="loading()"
+          [activeFilterCount]="activeFilterCount()"
+          [filtersOpen]="filtersOpen()"
+          [history]="promptHistory.recent()"
+          (ask)="onAsk($event)"
+          (pick)="onHistoryPick($event)"
+          (toggleFilters)="toggleFilters()"
+        />
+      }
 
       @if (serverWaking()) {
         <p class="ws__waking" role="status">
@@ -39,12 +68,15 @@
         </div>
       }
 
-      @if (filtersOpen()) {
+      @if (mode() === 'query' || filtersOpen()) {
         <div class="ws__filters">
           <app-filter-panel
             [fields]="schema()"
             [entitled]="entitled()"
+            [geo]="geoFilter()"
+            [mapOpen]="mapOpen()"
             (apply)="onApplyFilters($event)"
+            (geoChange)="onGeoChange($event)"
           />
         </div>
       }
@@ -79,25 +111,59 @@
               </div>
               <dl class="ws__help-list">
                 <div class="ws__help-item">
-                  <dt>Ask</dt>
-                  <dd>Describe the flat in plain language and press Enter — Seeker finds the closest matches by meaning, not just keywords.</dd>
+                  <dt>Prompt search</dt>
+                  <dd>Describe the flat in plain language and press Enter — Seeker finds the closest matches by meaning. Your recent prompts are kept as quick chips.</dd>
+                </div>
+                <div class="ws__help-item">
+                  <dt>Filter search</dt>
+                  <dd>Switch to the structured panel to match exactly by city, budget, size and more. Each mode keeps its own results, so you can flip between them.</dd>
                 </div>
                 <div class="ws__help-item">
                   <dt>Rerank</dt>
                   <dd>Re-orders the top matches with a second-pass relevance model for sharper ordering. Uses more of your token budget.</dd>
                 </div>
                 <div class="ws__help-item">
-                  <dt>Filters</dt>
-                  <dd>Open the structured panel to narrow by city, budget, size and more. The count shows how many filters are active.</dd>
-                </div>
-                <div class="ws__help-item">
-                  <dt>Show map</dt>
-                  <dd>Plot results on a map and drag to select an area — that area becomes a location filter for your search.</dd>
+                  <dt>Map area</dt>
+                  <dd>Drag to select an area — it instantly narrows the listings already shown, no new search. Hit “Search this area” to re-run with that radius.</dd>
                 </div>
               </dl>
+
+              <div class="ws__help-toggle">
+                <button
+                  type="button"
+                  role="switch"
+                  class="ws__switch"
+                  [class.is-on]="jumpToMap()"
+                  [attr.aria-checked]="jumpToMap()"
+                  (click)="toggleJumpToMap()"
+                >
+                  <span class="ws__switch-track" aria-hidden="true">
+                    <span class="ws__switch-thumb"></span>
+                  </span>
+                  <span class="ws__switch-text">
+                    <span class="ws__switch-label">Jump to map</span>
+                    <span class="ws__switch-desc">
+                      When you pick “Show on map” from the list, scroll the map back into view.
+                    </span>
+                  </span>
+                </button>
+              </div>
             </div>
           }
         </div>
+
+        @if (canSearchArea()) {
+          <button
+            type="button"
+            class="btn ws__search-area"
+            [disabled]="loading()"
+            (click)="searchThisArea()"
+            title="Re-run this search server-side with the selected radius"
+          >
+            <span aria-hidden="true">⌖</span>
+            Search this area
+          </button>
+        }
 
         <button
           type="button"
@@ -121,7 +187,7 @@
 
       @if (mapOpen()) {
         @defer (when mapOpen()) {
-          <div class="ws__map" [class.ws__map--split]="selectedListing()">
+          <div #mapAnchor class="ws__map" [class.ws__map--split]="selectedListing()">
             <div class="ws__map-canvas">
               <app-map-panel
                 [listings]="listings()"
@@ -148,10 +214,10 @@
         [hasSearched]="hasSearched()"
         [total]="total()"
         [contextNote]="contextNote()"
-        [sources]="sources()"
+        [sources]="activeSources()"
         [selectedUrl]="selectedUrl()"
         [selectable]="mapOpen()"
-        (select)="selectListing($event)"
+        (select)="selectFromList($event)"
       />
     </section>
   </main>

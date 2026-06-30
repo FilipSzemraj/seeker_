@@ -239,3 +239,44 @@
     padding: 0.75rem;
   }
 }
+
+/* Recent-prompt history — one-tap re-run chips (browser-persisted, last 3). */
+.bar__history {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2, 0.5rem);
+  margin-top: var(--s-3);
+}
+.bar__history-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--stone);
+}
+.bar__chip {
+  max-width: 22rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line-strong);
+  background: var(--white);
+  color: var(--ink-2);
+  font-size: 0.82rem;
+  transition:
+    border-color 0.2s var(--ease),
+    color 0.2s var(--ease),
+    background 0.2s var(--ease);
+}
+.bar__chip:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+}
+.bar__chip:disabled {
+  opacity: 0.55;
+  cursor: default;
+}

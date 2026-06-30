@@ -129,6 +129,57 @@
   margin-bottom: var(--s-6);
   //background: var(--paper);
 }
+/* Mode switch — Prompt (semantic) vs Filter (structured). */
+.ws__modes {
+  display: inline-flex;
+  gap: 0.25rem;
+  margin-bottom: var(--s-4);
+  padding: 0.25rem;
+  border-radius: var(--r-pill);
+  background: var(--paper-3);
+  border: 1px solid var(--line);
+}
+.ws__mode {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding: 0.4rem 0.95rem;
+  border-radius: var(--r-pill);
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--ink-2);
+  transition:
+    background 0.2s var(--ease),
+    color 0.2s var(--ease);
+}
+.ws__mode:hover {
+  color: var(--ink);
+}
+.ws__mode.is-on {
+  background: var(--white);
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+.ws__mode-hint {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--stone);
+}
+
+/* "Search this area" — re-runs the active search server-side with the radius. */
+.ws__search-area {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+.ws__search-area:hover {
+  background: var(--accent);
+  color: var(--white);
+}
+
 .ws__filters {
   margin-top: var(--s-4);
   animation: drop 0.24s var(--ease);
@@ -242,6 +293,65 @@
   line-height: 1.45;
   color: var(--ink-2);
 }
+
+/* Behaviour toggle that lives at the foot of the help popover. */
+.ws__help-toggle {
+  margin-top: var(--s-4);
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--line);
+}
+.ws__switch {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-3);
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+.ws__switch-track {
+  position: relative;
+  flex: none;
+  width: 2.2rem;
+  height: 1.25rem;
+  margin-top: 0.1rem;
+  border-radius: 999px;
+  background: var(--line-strong);
+  transition: background 0.2s var(--ease);
+}
+.ws__switch.is-on .ws__switch-track {
+  background: var(--accent);
+}
+.ws__switch-thumb {
+  position: absolute;
+  top: 0.15rem;
+  left: 0.15rem;
+  width: 0.95rem;
+  height: 0.95rem;
+  border-radius: 50%;
+  background: var(--white);
+  transition: transform 0.2s var(--ease);
+}
+.ws__switch.is-on .ws__switch-thumb {
+  transform: translateX(0.95rem);
+}
+.ws__switch-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+.ws__switch-label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+.ws__switch-desc {
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
 .ws__view-toggle.is-on {
   background: var(--accent-soft);
   color: var(--accent-ink);
@@ -300,5 +410,29 @@
   }
   .ws__search {
     position: static;
+  }
+  /* Anchoring to the button overflows the screen on phones — center it over the
+     scrim with comfortable side margins instead. */
+  .ws__help-pop {
+    position: fixed;
+    top: 50%;
+    left: var(--s-4);
+    right: var(--s-4);
+    width: auto;
+    max-height: 80vh;
+    overflow-y: auto;
+    transform: translateY(-50%);
+    animation: ws-help-rise 0.2s var(--ease);
+  }
+}
+
+@keyframes ws-help-rise {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-50% + 6px));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%);
   }
 }
