@@ -1,123 +1,94 @@
-import { Component, computed, output, signal } from '@angular/core';
+import { Component, computed, input, output, signal } from '@angular/core';
 
-import { emptyFilters, type ListingFilters } from '../../../../core/models/query.model';
+import type { FilterField } from '../../../../core/api/models';
+import type { FilterValue, FilterValues } from '../../../../core/models/query.model';
+import { FieldType, hasBit } from '../../../../core/api/field-type';
+import { FieldControl } from './controls/field-control';
 
-interface Option {
-  value: string;
+/** Display order + labels for the `section` grouping hint from /filters. */
+const SECTION_ORDER: { key: string; label: string }[] = [
+  { key: 'location', label: 'Location' },
+  { key: 'budget', label: 'Budget' },
+  { key: 'size', label: 'Size' },
+  { key: 'building', label: 'Building' },
+  { key: 'style', label: 'Style' },
+  { key: 'amenities', label: 'Amenities' },
+  { key: 'features', label: 'Features' },
+];
+
+interface SectionGroup {
+  key: string;
   label: string;
+  fields: FilterField[];
 }
 
-const DESIGN_STYLES: Option[] = [
-  { value: 'modern', label: 'Modern' },
-  { value: 'scandinavian', label: 'Scandinavian' },
-  { value: 'industrial(loft)', label: 'Industrial / loft' },
-  { value: 'minimalist', label: 'Minimalist' },
-  { value: 'classic', label: 'Classic' },
-  { value: 'boho', label: 'Boho' },
-  { value: 'vintage', label: 'Vintage' },
-  { value: 'art-deco', label: 'Art deco' },
-];
-
-const CONDITIONS: Option[] = [
-  { value: 'new', label: 'New' },
-  { value: 'excellent', label: 'Excellent' },
-  { value: 'good', label: 'Good' },
-  { value: 'fair', label: 'Fair' },
-];
-
-const BRIGHTNESS: Option[] = [
-  { value: 'bright', label: 'Bright' },
-  { value: 'moderate', label: 'Moderate' },
-  { value: 'dim', label: 'Dim' },
-];
-
-const AMENITIES: Option[] = [
-  { value: 'has_balcony', label: 'Balcony' },
-  { value: 'has_terrace', label: 'Terrace' },
-  { value: 'has_garden', label: 'Garden' },
-  { value: 'has_elevator', label: 'Lift' },
-  { value: 'has_parking', label: 'Parking' },
-  { value: 'has_furniture', label: 'Furnished' },
-  { value: 'has_separate_kitchen', label: 'Separate kitchen' },
-  { value: 'has_dishwasher', label: 'Dishwasher' },
-  { value: 'has_washer_dryer', label: 'Washer' },
-  { value: 'has_air_conditioning', label: 'Air conditioning' },
-  { value: 'has_walkin_shower', label: 'Walk-in shower' },
-  { value: 'has_high_ceiling', label: 'High ceilings' },
-];
-
 /**
- * Structured hard-filter form. Each control maps to a field the backend can
- * filter on exactly (QueryRequest fields + planned inference_output facets).
- * State is signal-driven; "Search" emits the assembled filters to the parent.
+ * Structured (form-mode) filter form, rendered ENTIRELY from the server-driven
+ * `/filters` schema — no hardcoded option lists. Fields are grouped by their
+ * `section`, each rendered by `app-field-control` (which picks a widget by
+ * AND-checking the bitmask). ADVANCED-flagged fields move into a collapsible
+ * section. "Search" emits the assembled `FilterValues` to the parent, which
+ * turns them into a `/query` request via the schema-driven request builder.
  */
 @Component({
   selector: 'app-filter-panel',
+  imports: [FieldControl],
   templateUrl: './filter-panel.html',
   styleUrl: './filter-panel.scss',
 })
 export class FilterPanel {
-  readonly apply = output<ListingFilters>();
+  /** The filter fields from GET /filters. */
+  readonly fields = input<FilterField[]>([]);
+  /** Whether the caller's tier may see BLUR-flagged values. */
+  readonly entitled = input(false);
+  readonly apply = output<FilterValues>();
 
-  protected readonly designStyles = DESIGN_STYLES;
-  protected readonly conditions = CONDITIONS;
-  protected readonly brightness = BRIGHTNESS;
-  protected readonly amenityOptions = AMENITIES;
-  protected readonly roomOptions = [1, 2, 3, 4];
+  protected readonly draft = signal<FilterValues>({});
+  protected readonly advancedOpen = signal(false);
 
-  protected readonly draft = signal<ListingFilters>(emptyFilters());
+  /** Query-mode fields only (the panel runs /query). */
+  private readonly queryFields = computed(() =>
+    this.fields().filter((f) => f.modes.includes('query') && !hasBit(f.type, FieldType.READONLY)),
+  );
 
-  protected readonly activeAmenities = computed(() => new Set(this.draft().amenities ?? []));
+  protected readonly mainSections = computed(() =>
+    this.group(this.queryFields().filter((f) => !hasBit(f.type, FieldType.ADVANCED))),
+  );
 
-  protected patch(patch: Partial<ListingFilters>): void {
-    this.draft.update((d) => ({ ...d, ...patch }));
+  protected readonly advancedSections = computed(() =>
+    this.group(this.queryFields().filter((f) => hasBit(f.type, FieldType.ADVANCED))),
+  );
+
+  protected readonly hasAdvanced = computed(() => this.advancedSections().length > 0);
+
+  protected valueOf(key: string): FilterValue {
+    return this.draft()[key] ?? null;
   }
 
-  protected setMaxCost(raw: string): void {
-    const n = raw.trim() === '' ? null : Number(raw);
-    this.patch({ max_cost: typeof n === 'number' && Number.isFinite(n) ? n : null });
-  }
-
-  protected setText(key: 'city' | 'district', raw: string): void {
-    const value = raw.trim() === '' ? null : raw;
-    if (key === 'city') this.patch({ city: value });
-    else this.patch({ district: value });
-  }
-
-  protected toggleRooms(n: number): void {
-    this.patch({ min_rooms: this.draft().min_rooms === n ? null : n });
-  }
-
-  protected setFurnished(value: boolean | null): void {
-    this.patch({ furnished: this.draft().furnished === value ? null : value });
-  }
-
-  protected setCostMode(mode: 'strict' | 'inclusive'): void {
-    this.patch({ cost_mode: mode });
-  }
-
-  protected selectOne(key: 'design_style' | 'condition' | 'brightness', value: string): void {
-    const next = this.draft()[key] === value ? null : value;
-    if (key === 'design_style') this.patch({ design_style: next });
-    else if (key === 'condition') this.patch({ condition: next });
-    else this.patch({ brightness: next });
-  }
-
-  protected toggleAmenity(value: string): void {
-    this.draft.update((d) => {
-      const set = new Set(d.amenities ?? []);
-      if (set.has(value)) set.delete(value);
-      else set.add(value);
-      return { ...d, amenities: [...set] };
-    });
+  protected setValue(key: string, value: FilterValue): void {
+    this.draft.update((d) => ({ ...d, [key]: value }));
   }
 
   protected clear(): void {
-    this.draft.set(emptyFilters());
-    this.apply.emit(this.draft());
+    this.draft.set({});
+    this.apply.emit({});
   }
 
   protected submit(): void {
     this.apply.emit(this.draft());
+  }
+
+  /** Group fields by `section` in the canonical display order. */
+  private group(fields: FilterField[]): SectionGroup[] {
+    const groups: SectionGroup[] = [];
+    for (const { key, label } of SECTION_ORDER) {
+      const inSection = fields.filter((f) => f.section === key);
+      if (inSection.length) groups.push({ key, label, fields: inSection });
+    }
+    // Any field whose section isn't in the known order still gets shown.
+    const known = new Set(SECTION_ORDER.map((s) => s.key));
+    const rest = fields.filter((f) => !known.has(f.section));
+    if (rest.length) groups.push({ key: 'other', label: 'Other', fields: rest });
+    return groups;
   }
 }

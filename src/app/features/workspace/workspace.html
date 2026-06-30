@@ -5,6 +5,9 @@
       Seeker
     </a>
     <div class="ws__account">
+      <span class="ws__quota data" [class.is-unlimited]="!quota()" title="Remaining search quota">
+        {{ quotaLabel() }}
+      </span>
       @if (auth.email(); as email) {
         <span class="ws__email data">{{ email }}</span>
       }
@@ -22,9 +25,27 @@
         (toggleFilters)="toggleFilters()"
       />
 
+      @if (serverWaking()) {
+        <p class="ws__waking" role="status">
+          <span class="ws__waking-dot" aria-hidden="true"></span>
+          Waking the server… the first request after an idle period can take a few seconds.
+        </p>
+      }
+
+      @if (errorBanner(); as msg) {
+        <div class="ws__error" role="alert">
+          <span>{{ msg }}</span>
+          <button type="button" class="ws__error-dismiss" (click)="dismissError()" aria-label="Dismiss">×</button>
+        </div>
+      }
+
       @if (filtersOpen()) {
         <div class="ws__filters">
-          <app-filter-panel (apply)="onApplyFilters($event); filtersOpen.set(false)" />
+          <app-filter-panel
+            [fields]="schema()"
+            [entitled]="entitled()"
+            (apply)="onApplyFilters($event)"
+          />
         </div>
       }
     </div>
@@ -75,7 +96,7 @@
       }
 
       <app-listing-list
-        [listings]="listings()"
+        [results]="results()"
         [loading]="loading()"
         [hasSearched]="hasSearched()"
         [total]="total()"
@@ -87,13 +108,4 @@
       />
     </section>
   </main>
-
-  <app-chat-panel
-    [open]="chatOpen()"
-    [busy]="chatBusy()"
-    [messages]="messages()"
-    (ask)="onAsk($event)"
-    (toggle)="toggleChat()"
-    (clear)="clearChat()"
-  />
 </div>

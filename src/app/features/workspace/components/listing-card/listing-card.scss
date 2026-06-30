@@ -56,6 +56,19 @@
   backdrop-filter: blur(4px);
 }
 
+.card__score {
+  position: absolute;
+  top: var(--s-3);
+  right: var(--s-3);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 0.3rem 0.55rem;
+  background: var(--accent);
+  color: var(--paper);
+  border-radius: var(--r-pill);
+}
+
 .card__body {
   display: flex;
   flex-direction: column;

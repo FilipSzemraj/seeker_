@@ -43,10 +43,18 @@ const AMENITY_LABEL: Record<string, string> = {
 export class ListingCard {
   readonly listing = input.required<Listing>();
   readonly variant = input<CardVariant>('full');
-  /** Optional "why it matched" line shown on chat result cards. */
+  /** Optional "why it matched" line shown on result cards. */
   readonly reason = input<string | undefined>(undefined);
+  /** Semantic-search similarity (0..1); null for structured results. */
+  readonly score = input<number | null>(null);
 
   protected readonly cover = computed(() => this.listing().images[0] ?? null);
+
+  /** Score as a whole-number percentage for the match chip, or null. */
+  protected readonly scorePct = computed(() => {
+    const s = this.score();
+    return s == null ? null : Math.round(Math.max(0, Math.min(1, s)) * 100);
+  });
 
   protected readonly sourceLabel = computed(() => SOURCE_LABEL[this.listing().source_adapter]);
 

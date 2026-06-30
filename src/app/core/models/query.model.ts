@@ -1,37 +1,23 @@
 /**
- * Query DTOs mirroring the planned Seeker query API
- * (seeker/models/query.py + docs/serverless-frontend-plan.md).
+ * Search DTOs. The wire request/response shapes are the OpenAPI-generated
+ * Pydantic contract (re-exported from `../api/models`); this file adds the few
+ * frontend-only view types the workspace and the server-driven filter panel
+ * need on top of them.
  *
- * Two retrieval modes share one backend:
- *   • form mode   — structured hard filters  → GET  /api/listings
- *   • prompt mode — natural-language / RAG    → POST /api/chat
+ * Two retrieval modes share one results grid:
+ *   • structured / form mode   — hard filters          → POST /query
+ *   • semantic / prompt mode    — free-text description  → POST /retrieve (listings only)
  */
-
 import type { Listing } from './listing.model';
 
-/** Structured filter request. Mirrors QueryRequest's form-mode fields, plus
- *  the inference_output facets that are planned as hard filters. */
-export interface ListingFilters {
-  city?: string | null;
-  district?: string | null;
-  lat?: number | null;
-  lon?: number | null;
-  radius_km?: number | null;
-  max_cost?: number | null;
-  /** "strict" drops listings with an incomplete cost breakdown. */
-  cost_mode: 'strict' | 'inclusive';
-  min_rooms?: number | null;
-  furnished?: boolean | null;
-
-  // Candidate enrichment facets (planned hard filters).
-  design_style?: string | null;
-  condition?: string | null;
-  brightness?: string | null;
-  /** Amenity facet keys (e.g. "has_balcony") the user requires as "yes". */
-  amenities?: string[];
-
-  limit: number;
-}
+export type {
+  SourceStatus,
+  QueryRequest,
+  QueryResponse,
+  RetrieveRequest,
+  RetrieveResponse,
+  QuotaSnapshot,
+} from '../api/models';
 
 /** A point + radius geographic area, as picked on the map. */
 export interface GeoArea {
@@ -40,25 +26,22 @@ export interface GeoArea {
   radius_km: number;
 }
 
-/** Per-source availability, mirrors SourceStatus. */
-export interface SourceStatus {
-  available: boolean;
-  last_successful_reach_at?: string | null;
-  message?: string | null;
-}
+/**
+ * Value of one server-driven filter field, keyed by `FilterField.key`.
+ * BOOLEAN fields are tri-state — `true` / `false` / `null` (unset); the request
+ * builder maps `facets` booleans to the `"yes"` / `"no"` strings the API wants.
+ */
+export type FilterValue = string | number | boolean | null;
 
-/** Mirrors QueryResponse. */
-export interface QueryResponse {
-  listings: Listing[];
-  total_matched: number;
-  source_availability: Record<string, SourceStatus>;
-  excluded_geocode_failed: number;
-}
+/** The whole filter form's state: `fieldKey -> value`. */
+export type FilterValues = Record<string, FilterValue>;
 
-export function emptyFilters(): ListingFilters {
-  return {
-    cost_mode: 'inclusive',
-    amenities: [],
-    limit: 20,
-  };
+/**
+ * A listing as rendered in the shared grid, plus its retrieval score. `score`
+ * is a 0..1 similarity for semantic (`/retrieve`) results and `null` for
+ * structured (`/query`) results, which the backend does not score.
+ */
+export interface ScoredListingView {
+  listing: Listing;
+  score: number | null;
 }

@@ -6,6 +6,9 @@
       <div class="card__media-empty" aria-hidden="true">No photo yet</div>
     }
     <span class="card__source data">{{ sourceLabel() }}</span>
+    @if (scorePct() !== null) {
+      <span class="card__score data" title="Semantic match">{{ scorePct() }}% match</span>
+    }
   </div>
 
   <div class="card__body">

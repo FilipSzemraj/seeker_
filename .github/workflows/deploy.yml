@@ -24,6 +24,11 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      # Adding environments
+      - name: Inject API base URL
+        run: |
+          sed -i "s|https://REPLACE_ME.execute-api.eu-central-1.amazonaws.com|${{ vars.API_BASE_URL }}|" \
+            src/environments/environment.prod.ts
       - run: npm ci
       - run: npx ng build --configuration production --base-href /seeker_/
       # SPA fallback so deep links / refreshes don't 404

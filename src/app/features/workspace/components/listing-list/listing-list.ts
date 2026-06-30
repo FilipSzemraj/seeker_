@@ -1,7 +1,7 @@
 import { Component, computed, input, output } from '@angular/core';
 
-import type { Listing } from '../../../../core/models/listing.model';
 import type { SourceStatus } from '../../../../core/models/query.model';
+import type { ScoredListingView } from '../../../../core/models/query.model';
 import { ListingCard } from '../listing-card/listing-card';
 
 interface SourceLine {
@@ -17,8 +17,10 @@ const SOURCE_LABEL: Record<string, string> = {
 };
 
 /**
- * The results grid shown under the search bar — shared output of both the
- * filter search and the conversational search. Purely presentational.
+ * The results grid shown under the search bar — the shared output of BOTH the
+ * structured filter search (`/query`) and the semantic prompt search
+ * (`/retrieve`). Purely presentational. Cards show a per-result score when one
+ * is present (semantic mode); structured results carry `score: null`.
  */
 @Component({
   selector: 'app-listing-list',
@@ -27,11 +29,11 @@ const SOURCE_LABEL: Record<string, string> = {
   styleUrl: './listing-list.scss',
 })
 export class ListingList {
-  readonly listings = input<Listing[]>([]);
+  readonly results = input<ScoredListingView[]>([]);
   readonly loading = input(false);
   readonly hasSearched = input(false);
   readonly total = input(0);
-  /** Short note on where these results came from (e.g. a chat prompt). */
+  /** Short note on where these results came from (e.g. a prompt). */
   readonly contextNote = input<string | undefined>(undefined);
   readonly sources = input<Record<string, SourceStatus>>({});
   /** `source_url` of the listing currently selected on the map, if any. */

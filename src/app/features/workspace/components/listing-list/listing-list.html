@@ -33,27 +33,27 @@
         <div class="skeleton"></div>
       }
     </div>
-  } @else if (listings().length) {
+  } @else if (results().length) {
     <div class="grid">
-      @for (listing of listings(); track listing.source_url) {
+      @for (r of results(); track r.listing.source_url) {
         <div
           class="grid__item"
-          [class.is-selected]="listing.source_url === selectedUrl()"
+          [class.is-selected]="r.listing.source_url === selectedUrl()"
           [class.is-selectable]="selectable()"
-          (click)="selectable() && select.emit(listing.source_url)"
+          (click)="selectable() && select.emit(r.listing.source_url)"
         >
           @if (selectable()) {
             <button
               type="button"
               class="grid__pick"
-              [class.is-on]="listing.source_url === selectedUrl()"
-              [attr.aria-pressed]="listing.source_url === selectedUrl()"
-              (click)="$event.stopPropagation(); select.emit(listing.source_url)"
+              [class.is-on]="r.listing.source_url === selectedUrl()"
+              [attr.aria-pressed]="r.listing.source_url === selectedUrl()"
+              (click)="$event.stopPropagation(); select.emit(r.listing.source_url)"
             >
-              {{ listing.source_url === selectedUrl() ? 'On map' : 'Show on map' }}
+              {{ r.listing.source_url === selectedUrl() ? 'On map' : 'Show on map' }}
             </button>
           }
-          <app-listing-card [listing]="listing" />
+          <app-listing-card [listing]="r.listing" [score]="r.score" />
         </div>
       }
     </div>
@@ -61,7 +61,7 @@
     <div class="results__empty">
       <p class="results__empty-title">Nothing matched.</p>
       <p class="results__empty-text">
-        Loosen a filter, raise the budget, or describe the place in your own words in the conversation.
+        Loosen a filter, raise the budget, or describe the place in your own words in the search box.
       </p>
     </div>
   }

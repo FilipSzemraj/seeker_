@@ -207,3 +207,125 @@ button {
     transition-duration: 0.001ms !important;
   }
 }
+
+/* =============================================================================
+   Shared form-control primitives
+   Used by the server-driven filter controls (each a standalone component, so
+   these live globally rather than scoped to one component's stylesheet).
+   ========================================================================== */
+
+/* Labelled field wrapper */
+.fld {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  min-width: 0;
+}
+.fld__label {
+  margin: 0;
+}
+.fld__hint {
+  font-size: 0.72rem;
+  color: var(--stone);
+}
+
+.fld__input {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--white);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+}
+.fld__input:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.fld__input input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0.7rem 0.85rem;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+.fld__input input:focus {
+  outline: none;
+}
+.fld__input--money input {
+  font-family: var(--font-mono);
+}
+.fld__suffix {
+  padding-right: 0.85rem;
+  color: var(--stone);
+  font-size: 0.9rem;
+}
+
+/* Segmented control (tri-state booleans, small enums) */
+.seg {
+  display: inline-flex;
+  background: var(--white);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  padding: 3px;
+  gap: 3px;
+  width: fit-content;
+  max-width: 100%;
+  flex-wrap: wrap;
+}
+.seg__btn {
+  border: 0;
+  background: transparent;
+  color: var(--ink-2);
+  padding: 0.45rem 0.8rem;
+  border-radius: 3px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition:
+    background 0.15s var(--ease),
+    color 0.15s var(--ease);
+}
+.seg__btn:hover {
+  background: var(--paper-2);
+}
+.seg__btn.is-on {
+  background: var(--accent);
+  color: var(--paper);
+}
+.seg__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Pills (single/multi select) */
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+.pill-btn {
+  border: 1px solid var(--line-strong);
+  background: var(--white);
+  color: var(--ink-2);
+  padding: 0.5rem 0.85rem;
+  border-radius: var(--r-pill);
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition:
+    background 0.15s var(--ease),
+    color 0.15s var(--ease),
+    border-color 0.15s var(--ease);
+}
+.pill-btn:hover {
+  border-color: var(--ink-2);
+}
+.pill-btn.is-on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--paper);
+}
+.pill-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
